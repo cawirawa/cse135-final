@@ -1,0 +1,84 @@
+<!-- <html>
+<head> -->
+  <!--Script Reference[1]-->
+  <!-- <script src="https://cdn.zinggrid.com/zinggrid.min.js" defer></script>
+</head>
+<body> -->
+  <!--Grid Component Placement[2]-->
+  <!-- <zing-grid
+    caption="Static"
+    src='https://woiks.xyz/api/static'>
+  </zing-grid>
+
+  <zing-grid
+    caption="Performance"
+    src='https://woiks.xyz/api/performance'>
+  </zing-grid>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html class="zg-html">
+  <head>
+    <meta charset="utf-8">
+    <title>Database</title>
+    <script src="https://cdn.zinggrid.com/zinggrid.min.js" defer></script>
+    <script src="/collector.js"></script>
+  </head>
+  <body class="zg-body">
+
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,400i,700" rel="stylesheet">
+    <div class="wrapper">
+      <div class="container">
+        <zing-grid
+          compact
+          sort
+          layout="row"
+          viewport-stop
+          layout-controls="disabled"
+          pager
+          page-size="6"
+          page-size-options="3,6,9"
+          class="loading"
+        >
+          <zg-caption>
+            <h1>Static</h1>
+          </zg-caption>
+          <zg-data src='https://woiks.xyz/api/static'></zg-data>
+        </zing-grid>
+      </div>
+      <div class="container">
+        <zing-grid
+          compact
+          sort
+          layout="row"
+          viewport-stop
+          layout-controls="disabled"
+          pager
+          page-size="6"
+          page-size-options="3,6,9">
+          <zg-caption>
+            <h1>Performance</h1>
+          </zg-caption>
+          <zg-data src='https://woiks.xyz/api/performance'></zg-data>
+        </zing-grid>
+      </div>
+      <div class="container">
+        <zing-grid
+          compact
+          sort
+          layout="row"
+          viewport-stop
+          layout-controls="disabled"
+          pager
+          page-size="6"
+          page-size-options="3,6,9">
+          <zg-caption>
+            <h1>Activity</h1>
+          </zg-caption>
+          <zg-data src='https://woiks.xyz/api/activity'></zg-data>
+        </zing-grid>
+      </div>
+    </div>
+  </body>
+</html>

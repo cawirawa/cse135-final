@@ -1,0 +1,32 @@
+{
+  "name": "public_html",
+  "version": "1.0.0",
+  "description": "domain site: https://woiks.xyz/ you need to login with the ta credentials to access this page.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "pm2 start server.js",
+    "dev:server": "nodemon --ignore sessions/ server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cawirawa/CSE135.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cawirawa/CSE135/issues"
+  },
+  "homepage": "https://github.com/cawirawa/CSE135#readme",
+  "dependencies": {
+    "express-session": "^1.17.2",
+    "json-server": "^0.16.3",
+    "passport": "^0.4.1",
+    "passport-local": "^1.0.0",
+    "session-file-store": "^1.5.0",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}

@@ -1,0 +1,383 @@
+<!-- <html>
+<head> -->
+  <!--Script Reference[1]-->
+  <!-- <script src="https://cdn.zinggrid.com/zinggrid.min.js" defer></script>
+</head>
+<body> -->
+  <!--Grid Component Placement[2]-->
+  <!-- <zing-grid
+    caption="Static"
+    src='https://woiks.xyz/api/static'>
+  </zing-grid>
+
+  <zing-grid
+    caption="Performance"
+    src='https://woiks.xyz/api/performance'>
+  </zing-grid>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html class="zg-html">
+  <head>
+    <meta charset="utf-8">
+    <title>Database</title>
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,400i,700" rel="stylesheet">
+  </head>
+  <body class="zg-body">
+    <div id="lineChart"></div>
+    <div id="barChart"></div>
+    <div id="pieChart"></div>
+    <script src="https://cdn.zingchart.com/zingchart.min.js"></script>
+    <script>
+      let average = (array) => array.reduce((a, b) => a + b) / array.length;
+      let sum = (array) => array.reduce((a, b) => a + b);
+      let loadDurationMap = {}
+      let sessionDurationMap = {}
+      let totalIdleDurationMap = {}
+      let pathNames = new Set()
+      fetch("https://woiks.xyz/api/performance").then(async (result) => {
+        let res = await result.json()
+        await res.forEach((data) => {
+          let val = loadDurationMap[data.path]
+          pathNames.add(data.path)
+
+          if (val === undefined) {
+            loadDurationMap[data.path] = [data.loadTime]
+          } else {
+            loadDurationMap[data.path].push(data.loadTime)
+          }
+        })
+      })
+      fetch("https://woiks.xyz/api/activity").then(async (result) => {
+        let res = await result.json()
+        await res.forEach((data) => {
+          pathNames.add(data.path)
+          let val = sessionDurationMap[data.path]
+
+          if (val === undefined && data.leftTime) {
+            sessionDurationMap[data.path] = [data.leftTime - data.enterTime]
+          } else if (data.leftTime) {
+            sessionDurationMap[data.path].push(data.leftTime - data.enterTime)
+          }
+
+          val = totalIdleDurationMap[data.path]
+          total = 0
+            data.idle.forEach(idleTime => {
+              total += (idleTime * 1000)
+            })
+          if (val === undefined) {
+            
+            if (total)
+              totalIdleDurationMap[data.path] = [total]
+          } else {
+            totalIdleDurationMap[data.path].push(total)
+          }
+        })
+
+      series = []
+      let obj = {}
+      let arr = []
+      pathNames.forEach(pathName => {
+        val = loadDurationMap[pathName]
+        if (val != undefined) {
+          arr.push(average(val))
+        } else {
+          arr.push(0)
+        }
+      })
+      obj["values"] = arr
+      obj["text"] = "Average Load Time"
+      series.push(obj)
+
+      obj = {}
+      arr = []
+      pathNames.forEach(pathName => {
+        val = sessionDurationMap[pathName]
+        if (val != undefined) {
+          arr.push(average(val))
+        } else {
+          arr.push(0)
+        }
+      })
+      obj["values"] = arr
+      obj["text"] = "Average Session Time"
+      series.push(obj)
+
+      obj = {}
+      arr = []
+      pathNames.forEach(pathName => {
+        val = totalIdleDurationMap[pathName]
+        if (val != undefined) {
+          arr.push(sum(val))
+        } else {
+          arr.push(0)
+        }
+      })
+      obj["values"] = arr
+      obj["text"] = "Average Total Idle Time"
+      series.push(obj)
+
+
+    zingchart.render({
+        id: 'lineChart',
+        data: {
+        type: 'line',
+        "utc": true,
+        "title": {
+          "text": "Webpage Analytics",
+          "font-size": "24px",
+          "adjust-layout": true
+        },
+        "plotarea": {
+          "margin": "dynamic 45 60 dynamic",
+        },
+        "legend": {
+          "layout": "float",
+          "background-color": "none",
+          "border-width": 0,
+          "shadow": 0,
+          "align": "center",
+          "adjust-layout": true,
+          "toggle-action": "remove",
+          "item": {
+            "padding": 7,
+            "marginRight": 17,
+            "cursor": "hand"
+          }
+        },
+        "scale-x": {
+          "label": {
+            "text": "Path",
+          },
+          labels: Array.from(pathNames),
+          "align": "center",
+        },
+        "scale-y": {
+          "line-color": "#f6f7f8",
+          "shadow": 0,
+          "guide": {
+            "line-style": "dashed"
+          },
+          "label": {
+            "text": "Time (Millisecond)",
+          },
+          "minor-ticks": 0,
+          "thousands-separator": ","
+        },
+        "crosshair-x": {
+          "line-color": "#efefef",
+          "plot-label": {
+            "border-radius": "5px",
+            "border-width": "1px",
+            "border-color": "#f6f7f8",
+            "padding": "10px",
+            "font-weight": "bold"
+          },
+          "scale-label": {
+            "font-color": "#000",
+            "background-color": "#f6f7f8",
+            "border-radius": "5px"
+          }
+        },
+        "tooltip": {
+          "visible": false
+        },
+        "plot": {
+          "highlight": true,
+          "tooltip-text": "%t views: %v<br>%k",
+          "shadow": 0,
+          "line-width": "2px",
+          "marker": {
+            "type": "circle",
+            "size": 3
+          },
+          "highlight-state": {
+            "line-width": 3
+          },
+          "animation": {
+            "effect": 1,
+            "sequence": 2,
+            "speed": 100,
+          }
+        },
+        series: series
+        }
+    });
+      })
+
+      fetch("https://woiks.xyz/api/activity").then(async (data) => {
+        res = await data.json()
+
+        hmap = {}
+
+
+        await res.forEach((activity) => {
+          let date = new Date(activity["enterTime"])
+          if (!hmap[[activity['isMobile'] ,date.getDay()]]) {
+            hmap[[activity['isMobile'] ,date.getDay()]] = 1
+          } else {
+            hmap[[activity['isMobile'] ,date.getDay()]]++
+          }
+        })
+
+        zingchart.render({
+        id: 'barChart',
+        data: {
+        type: 'bar',
+        "title": {
+          "text": "Visits vs Day of the Week",
+          "font-size": "24px",
+          "adjust-layout": true
+        },
+        "plotarea": {
+          "margin": "dynamic 45 60 dynamic",
+        },
+        "legend": {
+          "layout": "float",
+          "background-color": "none",
+          "border-width": 0,
+          "shadow": 0,
+          "align": "center",
+          "adjust-layout": true,
+          "toggle-action": "remove",
+          "item": {
+            "padding": 7,
+            "marginRight": 17,
+            "cursor": "hand"
+          }
+        },
+        "scale-x": {
+          "label": {
+            "text": "Day",
+          },
+          labels: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+          "align": "center",
+        },
+        "scale-y": {
+          "line-color": "#f6f7f8",
+          "shadow": 0,
+          "guide": {
+            "line-style": "dashed"
+          },
+          "label": {
+            "text": "Visits",
+          },
+          "minor-ticks": 0,
+          "thousands-separator": ","
+        },
+        "crosshair-x": {
+          "line-color": "#efefef",
+          "plot-label": {
+            "border-radius": "5px",
+            "border-width": "1px",
+            "border-color": "#f6f7f8",
+            "padding": "10px",
+            "font-weight": "bold"
+          },
+          "scale-label": {
+            "font-color": "#000",
+            "background-color": "#f6f7f8",
+            "border-radius": "5px"
+          }
+        },
+        "tooltip": {
+          "visible": false
+        },
+        "plot": {
+          "highlight": true,
+          "tooltip-text": "%t views: %v<br>%k",
+          "shadow": 0,
+          "line-width": "2px",
+          "marker": {
+            "type": "circle",
+            "size": 3
+          },
+          "highlight-state": {
+            "line-width": 3
+          },
+          "animation": {
+            "effect": 1,
+            "sequence": 2,
+            "speed": 100,
+          }
+        },
+        series: [
+            { values: [hmap[[false ,1]], hmap[[false ,2]],hmap[[false ,3]],hmap[[false ,4]],hmap[[false ,5]], hmap[[false ,6]], hmap[[false ,0]]], text: "Desktop" },
+            { values: [hmap[[true ,1]], hmap[[true ,2]], hmap[[true ,3]], hmap[[true ,4]], hmap[[true ,5]], hmap[[true ,6]], hmap[[true ,0]]] , text: "Mobile"},
+        ]
+        }
+    });
+      })
+      
+
+    
+
+
+    var languages = new Proxy({}, {
+      get: (target, name) => name in target ? target[name] : 0
+    })
+    fetch("https://woiks.xyz/api/static").then(async (response) => {
+        resBody = await response.json()
+        
+        await resBody.forEach(element => {
+          if (!element.language || element.language == "") return
+            languages[element.language]++
+        })
+        console.log(languages)
+    zingchart.render({
+        id: 'pieChart',
+        data: {
+        type: 'pie',
+        plot: {
+            borderColor: "#2B313B",
+            borderWidth: 5,
+            // slice: 90,
+            valueBox: {
+            placement: 'out',
+            text: '%t\n%npv%',
+            fontFamily: "Open Sans"
+            },
+            tooltip: {
+            fontSize: '18',
+            fontFamily: "Open Sans",
+            padding: "5 10",
+            text: "%npv%"
+            },
+            animation: {
+            effect: 2,
+            method: 5,
+            speed: 900,
+            sequence: 1,
+            delay: 3000
+            }
+        },
+        source: {
+            text: 'gs.statcounter.com',
+            fontColor: "#8e99a9",
+            fontFamily: "Open Sans"
+        },
+        title: {
+            fontColor: "#8e99a9",
+            text: 'Languages',
+            align: "center",
+            offsetX: 10,
+            fontFamily: "Open Sans",
+            fontSize: 25
+        },
+        plotarea: {
+            margin: "20 0 0 0"
+        },
+        series: Object.keys(languages).map((key) => {
+            return { values: [languages[key]], text: key }
+        })
+        }
+    });
+
+    })
+
+    
+    </script>
+    </div>
+  </body>
+</html>
