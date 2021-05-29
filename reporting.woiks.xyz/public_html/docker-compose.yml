@@ -1,0 +1,17 @@
+version: '3.3'
+services: 
+    dev: 
+        build: ./
+        ports:
+            - "8000:3000"
+        command: npm run dev:server
+        volumes:
+            - "./server/src:/src"
+
+    server:
+        build: ./
+        ports:
+            - "8000:3000"
+        command: npm run prod
+        volumes:
+            - "./server/src:/src"
