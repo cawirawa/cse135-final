@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/style/login.css" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <title>Login</title>
+</head>
+
+<body>
+  <h1>Log In</h1>
+  <form class="container" action="#" method="POST">
+      <label for="email"></label><b>Email/Username</b></label> </br>
+      <input id="username" type="text" placeholder="email or username" name="email" required> </br>
+
+      <label for="password"><b>Password</b></label></br>
+      <input id="password" type="password" placeholder="password" name="password" required></br>
+
+      <button type="submit" onclick="formSubmit(event)">Login</button>
+  </form>
+  <script>
+    function formSubmit(e){
+    e.preventDefault(); //This will prevent the default click action
+
+    var frm = $('#'+ $(this).data('name') +'');
+
+    let body = JSON.stringify({
+      "email": $('#username').val(),
+      "password": $('#password').val()
+    })
+  
+    $.ajax({
+        type: "POST",
+        url: '/api/login',
+        data: body,
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+            console.log('Submission was successful.');
+            // window.location.href = data?.redirect;
+            console.log(data);
+            window.location.href = '/' 
+        },
+        error: function (data) {
+            console.log('An error occurred.');
+            console.log(data?.responseJSON);
+        }
+    });
+}
+  </script>
+</body>
+
+</html>

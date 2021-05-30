@@ -1,7 +1,7 @@
 // const authService = require('../service/user')
 const express = require('express')
-const passport = require('passport')
 const authService = require('../service/auth')
+var path = require("path");
 // Create router
 var authRouter = express.Router()
 
@@ -105,7 +105,10 @@ authRouter.post('/login', async (req, res, next) => {
       let user = await authService.login(email, password)
       req.session.loggedIn = true
       req.session.isAdmin = user.isAdmin
-      res.redirect('/dashboard')
+      res.send({
+        success: true,
+        isAdmin: user.isAdmin 
+      })
     } catch (err) {
       return res.status(500).send({
         error: err.message || err
@@ -118,7 +121,7 @@ authRouter.get('/logout', async (req, res, next) => {
     req.session.loggedIn = false
     req.session.isAdmin = false
     req.session.destroy();
-    res.redirect('/')
+    res.redirect('/logout')
   } catch (err) {
     return res.status(500).send({
       error: err.message || err
