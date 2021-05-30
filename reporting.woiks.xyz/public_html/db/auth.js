@@ -29,10 +29,34 @@ module.exports.insertUser = async (user) => {
     }
 }
 
-module.exports.updateUser = async (user) => {
+module.exports.getAllUsers = async () => {
+    try {
+        let result =  await userCollection.find({}).toArray()
+        return result
+    } catch (err) {
+        throw err
+    }
+}
+
+
+module.exports.getByID = async (id) => {
+    try {
+        if (!id) throw "db.auth.getByID(): invalid parameter"
+        let result = await userCollection
+        .findOne({
+            _id: new ObjectId(id)
+        })
+        return result
+    } catch (err) {
+        throw err
+    }
+}
+
+
+module.exports.updateUser = async (id, user) => {
     try {
         if (
-            !user._id ||
+            !id ||
             !user.username ||
             !user.email ||
             !user.password ||
@@ -41,14 +65,31 @@ module.exports.updateUser = async (user) => {
                 throw "db.auth.updateUser(): invalid parameter"
         }
         let result = await userCollection.updateOne({
-            _id: new ObjectId(user._id),
+            _id: new ObjectId(id),
         }, {
             $set: user
         })
-        if (result['ops'] && result['ops'].length == 0) {
-            throw "db.auth.updateUser(): Could not update row."
-        }
+        if (
+            result &&
+            result["result"] &&
+            result["result"]["ok"]
+          ) {
+            result = await userCollection.findOne({ _id: new ObjectId(id) });
+          }
         return result
+    } catch (err) {
+        throw err
+    }
+}
+
+module.exports.deleteUser = async (id) => {
+    try {
+        if (
+            !id
+            ) {
+                throw "db.auth.deleteUser(): invalid parameter"
+        }
+        await userCollection.deleteOne({ _id: new ObjectId(id) })
     } catch (err) {
         throw err
     }
@@ -58,6 +99,16 @@ module.exports.getUserByEmail = async (email) => {
     try {
         return await userCollection.findOne({
             email,
+        })
+    } catch (err) {
+        throw err
+    }
+}
+
+module.exports.getUserByUsername = async (username) => {
+    try {
+        return await userCollection.findOne({
+            username,
         })
     } catch (err) {
         throw err

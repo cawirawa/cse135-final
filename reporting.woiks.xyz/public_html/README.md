@@ -1,16 +1,11 @@
 # CSE135
-domain site: https://woiks.xyz/
-you need to login with the ta credentials to access this page.
+domain site: woiks.xyz
+reporting website: https://reporting.woiks.xyz
 
-## Grader Login Credentials for Website
-Username: ta
-Password: cse135sp21
+## Project description
+This project is built using Node.js + Express.js due to its ease in development. We use mongodb for this project as both of us are interested in exploring more into mongodb. We are hosting it on Atlas.
 
-login credentials:
-email: test@test.com
-password: password
+## Authentication
+For authentication, we explored various methods of doing it. We first made the necessary endpoints in the gateway folder and set up the structure of the project to seperate gateway, service and database operations for beter debugging.
 
-## Checkpoint 1.
-I have been trying to create a authenthication via sessioning by utilizing express and passportjs. You can now login and get redirected to index2.html. If you pass the wrong login, you will get a response of {"alerts":"Failed to serialize user into session"} for now. I have not had time to catch the response in the front end as an alert, i would do it in the future. index2.html is just a dummy to check if login works, it is not an authenticated route that can only be accessed when logged in. 
-note##
-server.js attached to the submission is one exclusively for reporting.woiks.xyz and is different from woiks.xyz's.
+For logging in, we explored passport.js but decided to do the old fashion way by hashing password and creating session data manually because we think passport.js is an overkill for this project. We used the 'express-session' middleware to make it easier to manage sessions. The sessions data is will be stored locally in the server (No db involves). 
