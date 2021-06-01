@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="/style/dashboard.css" />
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <title>Dashboard</title>
+</head>
+
+<body>
+  <h1>Dashboard</h1>
+  <a id="users" href="/users">User Management Page</a>
+  <a href="/logout">Logout</a>
+</body>
+
+<script>
+  function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
+  }
+  let isAdmin = getCookie('isAdmin');
+  if (isAdmin === "false" || isAdmin === "") {
+    document.querySelector('#users').style.display = 'none'
+  }
+</script>
+
+</html>

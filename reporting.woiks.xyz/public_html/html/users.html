@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Users</title>
+  <script src="https://cdn.zinggrid.com/zinggrid.min.js" defer></script>
+</head>
+
+<body>
+  <a href="/">Back to Dashboard</a><br />
+  <zing-grid caption="Users" editor editor-controls>
+    <zg-data>
+      <zg-param name="src" value="/api/user"></zg-param>
+      <zg-param name="serverErrorPath" value="error"></zg-param>
+    </zg-data>
+    <zg-colgroup>
+      <zg-column index="id" sort="disabled" editor="false"></zg-column>
+      <zg-column index="username"></zg-column>
+      <zg-column index="email"></zg-column>
+      <zg-column index="password"></zg-column>
+      <zg-column index="isAdmin" sort="disabled" type="boolean"></zg-column>
+    </zg-colgroup>
+  </zing-grid>
+  <script>
+
+  </script>
+</body>
+
+</html>

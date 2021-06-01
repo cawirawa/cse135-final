@@ -24,7 +24,7 @@ authRouter.post('/user', async (req, res, next) => {
     let result = await authService.insertUser(req.body)
     res.send(result)
   } catch (err) {
-    return res.status(500).send({
+    return res.status(400).send({
       error: err.message || err
     })
   } 
@@ -39,7 +39,7 @@ authRouter.get('/user', async (req, res, next) => {
     let result = await authService.getAllUsers()
     res.send(result)
   } catch (err) {
-    return res.status(500).send({
+    return res.status(400).send({
       error: err.message || err
     })
   } 
@@ -59,14 +59,14 @@ authRouter.get('/user/:id', async (req, res, next) => {
     }
     res.send(result)
   } catch (err) {
-    return res.status(500).send({
+    return res.status(400).send({
       error: err.message || err
     })
   } 
 })
 
 // UPDATE
-authRouter.put('/user/:id', async (req, res, next) => {
+authRouter.patch('/user/:id', async (req, res, next) => {
   try {
     if (!req.session.isAdmin) {
       return res.redirect('/') 
@@ -74,7 +74,7 @@ authRouter.put('/user/:id', async (req, res, next) => {
     let result = await authService.updateUser(req.params.id, req.body)
     res.send(result)
   } catch (err) {
-    return res.status(500).send({
+    return res.status(400).send({
       error: err.message || err
     })
   } 
@@ -89,7 +89,7 @@ authRouter.delete('/user/:id', async (req, res, next) => {
     await authService.deleteUser(req.params.id)
     res.send({success: true})
   } catch (err) {
-    return res.status(500).send({
+    return res.status(400).send({
       error: err.message || err
     })
   } 
@@ -101,32 +101,20 @@ authRouter.post('/login', async (req, res, next) => {
       const {
         email,
         password
-      } = req.body 
+      } = req.body
       let user = await authService.login(email, password)
       req.session.loggedIn = true
       req.session.isAdmin = user.isAdmin
-      res.send({
+      res.cookie('isAdmin', user.isAdmin.toString()).send({
         success: true,
         isAdmin: user.isAdmin 
       })
     } catch (err) {
-      return res.status(500).send({
+      return res.status(400).send({
         error: err.message || err
       })
     }
   })
 
-authRouter.get('/logout', async (req, res, next) => {
-  try {
-    req.session.loggedIn = false
-    req.session.isAdmin = false
-    req.session.destroy();
-    res.redirect('/logout')
-  } catch (err) {
-    return res.status(500).send({
-      error: err.message || err
-    })
-  }
-})
 
 module.exports = authRouter
