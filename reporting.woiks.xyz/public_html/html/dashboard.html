@@ -20,11 +20,14 @@
   </div>
   <div class="container" >
     <div class="chart-row">
-      <div id="languages" class="chart"></div>
       <div id="lineChart" class="chart"></div>
     </div>
     <div class="chart-row">
+      <div id="languages" class="chart"></div>
       <div id="barChart" class="chart"></div>
+    </div>
+    <div class="chart-row">
+      <div id="operating-system" class="chart"></div>
     </div>
   </div>
 </body>
@@ -350,7 +353,6 @@
           }
         },
         title: {
-          fontColor: "#8e99a9",
           text: 'Languages',
           align: "center",
           offsetX: 10,
@@ -368,7 +370,81 @@
 
   })
 
+  var devices = new Proxy({}, {
+    get: (target, name) => name in target ? target[name] : 0
+  })
+  fetch("/api/static").then(async (response) => {
+    resBody = await response.json()
+    const regex1 = /.+\.\d \(/i;
+    const regex2 = /\).+/i; 
+    const android = /(android|Android) \d+\.\d+\;/;
+    const windows = /(windows|Windows) .+ \d+.\d+\;/;
+    const mac = /(Macintosh)\;/;
+    const ios = /like Mac OS X/;
+    const linux = /Linux x.+/;
+    await resBody.forEach(element => {
+      if (!element.userAgent || element.userAgent == "") return
+      let userAgent = element.userAgent
+      userAgent = userAgent.replace(regex1, "")
+      userAgent = userAgent.replace(regex2, "")
+      if (android.test(userAgent)) {
+        devices["Android"]++
+      } else if (windows.test(userAgent)) {
+        devices["Windows"]++
+      } else if (mac.test(userAgent)) {
+        devices["Macintosh"]++
+      } else if (ios.test(userAgent)) {
+        devices['IOS']++
+      } else if (linux.test(userAgent)) {
+        devices["Linux"]++ 
+      }else {
+        devices["Others"]++
+      }
+    })
+    zingchart.render({
+      id: 'operating-system',
+      data: {
+        type: 'pie',
+        plot: {
+          borderColor: "#2B313B",
+          borderWidth: 5,
+          // slice: 90,
+          valueBox: {
+            placement: 'out',
+            text: '%t\n%npv%',
+            fontFamily: "Open Sans"
+          },
+          tooltip: {
+            fontSize: '18',
+            fontFamily: "Open Sans",
+            padding: "5 10",
+            text: "%npv%"
+          },
+          animation: {
+            effect: 2,
+            method: 5,
+            speed: 900,
+            sequence: 1,
+            delay: 3000
+          }
+        },
+        title: {
+          text: 'Operating Systems',
+          align: "center",
+          offsetX: 10,
+          fontFamily: "Open Sans",
+          fontSize: 25
+        },
+        plotarea: {
+          margin: "20 0 0 0"
+        },
+        series: Object.keys(devices).map((key) => {
+          return { values: [devices[key]], text: key }
+        })
+      }
+    });
 
+  })
 </script>
 
 </html>
