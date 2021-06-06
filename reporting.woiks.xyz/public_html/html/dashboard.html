@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="/style/dashboard.css" />
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
   <script src="https://cdn.zingchart.com/zingchart.min.js"></script>
+  <script src="https://cdn.zinggrid.com/zinggrid.min.js" defer></script>
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
   <title>Dashboard</title>
 </head>
 
@@ -18,20 +21,48 @@
       <a href="/logout">Logout</a>
     </div>
   </div>
-  <div class="container" >
+  <div class="container">
     <div class="chart-row">
       <div id="lineChart" class="chart"></div>
     </div>
     <div class="chart-row">
-      <div id="languages" class="chart"></div>
       <div id="barChart" class="chart"></div>
     </div>
     <div class="chart-row">
       <div id="operating-system" class="chart"></div>
+      <div id="languages" class="chart"></div>
+    </div>
+    <div class="chart-row">
+      <zing-grid class="chart" id="grid" theme="default" caption="Page Info">
+        <zg-colgroup>
+          <zg-column index="page" header="Page"></zg-column>
+          <zg-column index="pageViews" header="Page Views"></zg-column>
+          <zg-column index="avgTimeOnPage" header="Average Time on Page (second)"></zg-column>
+        </zg-colgroup>
+      </zing-grid>
     </div>
   </div>
 </body>
 <script>
+  function getCookie(cname) {
+    var name = cname + "=";
+    var decodedCookie = decodeURIComponent(document.cookie);
+    var ca = decodedCookie.split(';');
+    for (var i = 0; i < ca.length; i++) {
+      var c = ca[i];
+      while (c.charAt(0) == ' ') {
+        c = c.substring(1);
+      }
+      if (c.indexOf(name) == 0) {
+        return c.substring(name.length, c.length);
+      }
+    }
+    return "";
+  }
+  var userManagementAnchor = document.getElementById("users");
+  if (getCookie("isAdmin") !== "true") {
+    userManagementAnchor.style.display = "none";
+  }
   let average = (array) => array.reduce((a, b) => a + b) / array.length;
   let sum = (array) => array.reduce((a, b) => a + b);
   let loadDurationMap = {}
@@ -376,7 +407,7 @@
   fetch("/api/static").then(async (response) => {
     resBody = await response.json()
     const regex1 = /.+\.\d \(/i;
-    const regex2 = /\).+/i; 
+    const regex2 = /\).+/i;
     const android = /(android|Android) \d+\.\d+\;/;
     const windows = /(windows|Windows) .+ \d+.\d+\;/;
     const mac = /(Macintosh)\;/;
@@ -396,8 +427,8 @@
       } else if (ios.test(userAgent)) {
         devices['IOS']++
       } else if (linux.test(userAgent)) {
-        devices["Linux"]++ 
-      }else {
+        devices["Linux"]++
+      } else {
         devices["Others"]++
       }
     })
@@ -443,6 +474,52 @@
         })
       }
     });
+
+
+    let pages = [];
+    var pageViews = new Proxy({}, {
+      get: (target, name) => name in target ? target[name] : 0
+    })
+
+    var avgTimeOnPage = new Proxy({}, {
+      get: (target, name) => name in target ? target[name] : [0, 0]
+    })
+
+    const zingGridRef = document.querySelector('#grid');
+    fetch("/api/activity").then(async (response) => {
+    resBody = await response.json()
+    await resBody.forEach(element => {
+      pages.push(element?.path)
+      pageViews[element?.path]++
+      curr = avgTimeOnPage[element.path]
+      let leftDate = new Date(element.leftTime)
+      let enterDate = new Date(element.enterTime)
+      curr[0] += Math.abs(leftDate.getTime() - enterDate.getTime()) / 1000
+      curr[1]++ 
+      avgTimeOnPage[element.path] = curr 
+      delete leftDate;
+      delete enterDate
+    })
+
+    let data = []
+    let pagesSet = new Set(pages);
+
+    pagesSet.forEach((val) => {
+      let currData = {
+        page: val,
+        pageViews: pageViews[val],
+        avgTimeOnPage: avgTimeOnPage[val][0]/avgTimeOnPage[val][1],
+      }
+      data.push(currData)
+    })
+
+    for (let i = 0; i < pagesSet.size; i++) {
+      
+    }
+    zingGridRef.setAttribute('data', JSON.stringify(data));
+
+
+  })
 
   })
 </script>

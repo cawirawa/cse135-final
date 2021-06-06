@@ -30,4 +30,8 @@ router.get("/users", (req, res) => {
   res.sendFile(path.join(HTML_PATH + "users.html"));
 });
 
+router.get("/favicon.ico", (req, res) => {
+  res.sendFile(path.join(HTML_PATH + "favicon.ico"));
+});
+
 module.exports = router;
