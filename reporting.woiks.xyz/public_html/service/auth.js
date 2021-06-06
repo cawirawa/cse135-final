@@ -1,5 +1,4 @@
 const bcrypt = require("bcrypt");
-const { createImportSpecifier } = require("typescript");
 const constants = require("../constants");
 
 const authDB = require("../db/auth");
@@ -82,14 +81,14 @@ module.exports.login = async (email, password) => {
     if (typeof password != constants.STRING) {
       throw "Invalid password.";
     }
-    console.log(1);
+
     email = email.toLowerCase();
     let userAccount = await authDB.getUserByEmail(email);
-    console.log(2);
+
     if (!userAccount) {
       userAccount = await authDB.getUserByUsername(email);
     }
-    console.log(3);
+
     if (!userAccount) {
       throw "User not found";
     }

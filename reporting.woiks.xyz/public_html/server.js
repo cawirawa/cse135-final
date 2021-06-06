@@ -7,6 +7,9 @@ const FileStore = require('session-file-store')(session)
 var path = require("path")
 
 const authRouter = require('./gateway/auth')
+const staticRouter = require('./gateway/static')
+const performanceRouter = require('./gateway/performance')
+const activityRouter = require('./gateway/activity')
 const commonRouter = require('./gateway/common')
 
 const PORT = 8000;
@@ -36,7 +39,10 @@ var cssPath = path.join(__dirname, 'style');
 app.use('/style', express.static(cssPath))
 
 // import routers from sub directory
-app.use('/api/', authRouter);
+app.use('/api/user/', authRouter);
+app.use('/api/static/', staticRouter);
+app.use('/api/performance/', performanceRouter);
+app.use('/api/activity/', activityRouter);
 app.use('/', commonRouter);
 
 app.listen(PORT, () => {

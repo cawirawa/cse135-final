@@ -63,7 +63,6 @@ module.exports.getByID = async (id) => {
 
 module.exports.updateUser = async (id, user) => {
   try {
-    console.log(user);
     let result = await userCollection.updateOne(
       {
         _id: new ObjectId(id),

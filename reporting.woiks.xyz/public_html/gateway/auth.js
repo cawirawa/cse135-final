@@ -1,25 +1,13 @@
 // const authService = require('../service/user')
 const express = require('express')
 const authService = require('../service/auth')
-var path = require("path");
 // Create router
 var authRouter = express.Router()
-
-// Test
-authRouter.get('/', (req, res) => {
-  if (req.session.loggedIn) {
-    return res.redirect('dashboard') 
-  }
-  console.log('Inside the homepage callback function')
-  // console.log(req.sessionID)
-  res.send(`You got home page!\n`) 
-  // window.location.href="../index.html"
-})
 
 // CRUD
 
 // CREATE
-authRouter.post('/user', async (req, res, next) => {
+authRouter.post('/', async (req, res, next) => {
   try {
     let result = await authService.insertUser(req.body)
     res.send(result)
@@ -31,7 +19,7 @@ authRouter.post('/user', async (req, res, next) => {
 })
 
 // GET ALL
-authRouter.get('/user', async (req, res, next) => {
+authRouter.get('/', async (req, res, next) => {
   try {
     if (!req.session.isAdmin) {
       return res.redirect('/') 
@@ -46,7 +34,7 @@ authRouter.get('/user', async (req, res, next) => {
 })
 
 // GET
-authRouter.get('/user/:id', async (req, res, next) => {
+authRouter.get('/:id', async (req, res, next) => {
   try {
     if (!req.session.isAdmin) {
       return res.redirect('/') 
@@ -66,7 +54,7 @@ authRouter.get('/user/:id', async (req, res, next) => {
 })
 
 // UPDATE
-authRouter.patch('/user/:id', async (req, res, next) => {
+authRouter.patch('/:id', async (req, res, next) => {
   try {
     if (!req.session.isAdmin) {
       return res.redirect('/') 
@@ -81,7 +69,7 @@ authRouter.patch('/user/:id', async (req, res, next) => {
 })
 
 // DELETE
-authRouter.delete('/user/:id', async (req, res, next) => {
+authRouter.delete('/:id', async (req, res, next) => {
   try {
     if (!req.session.isAdmin) {
       return res.redirect('/') 
