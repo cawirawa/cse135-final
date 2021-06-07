@@ -54,7 +54,7 @@ module.exports.getUserByID = async (id) => {
 module.exports.updateUser = async (id, user) => {
   try {
     if (!user) throw "Cannot have empty input!";
-    if (user?.password)
+    if (user.password)
       user.password = await bcrypt.hash(user.password, saltRounds);
     return await authDB.updateUser(id, user);
   } catch (err) {

@@ -15,34 +15,31 @@
 
 <body>
   <div class="header">
-    <h1>Dashboard</h1>
+    <h1>Sessions report</h1>
     <div class="nav-links">
-      <a id="users" href="/users">User Management Page</a>
+      <a href="/">Home Page</a>
       <a href="/logout">Logout</a>
     </div>
   </div>
+
+  <div>
+    <h1>question</h1>
+    <h3>We want to look at how engaged our users are in our page. Since sometimes the user will idle a page alot, we decided to calculate the actual session time when the user is not idle. And then we shall count how many interactions is done. Another parameter to see is how often they scroll to see if the page is too long or not.</h3>
+  </div>
   <div class="container">
     <div class="chart-row">
-      <div href="/session.html" id="barChartSession" class="chart"></div>
-    </div>
-      <a href="/session.html">Sessions Report
-      </a>
-    <div class="chart-row">
-      <div id="lineChartVisits" class="chart"></div>
+      <div id="barChartSession" class="chart"></div>
     </div>
     <div class="chart-row">
-      <div id="barChart" class="chart"></div>
-    </div>
-    <div class="chart-row">
-      <div id="operating-system" class="chart"></div>
-      <div id="languages" class="chart"></div>
+      <div id="engagementChart" class="chart"></div>
     </div>
     <div class="chart-row">
       <zing-grid class="chart" id="grid" theme="default" caption="Page Info">
         <zg-colgroup>
           <zg-column index="page" header="Page"></zg-column>
-          <zg-column index="pageViews" header="Page Views"></zg-column>
-          <zg-column index="avgTimeOnPage" header="Average Time on Page (second)"></zg-column>
+          <zg-column index="avgClicks" header="Average Clicks on Page "></zg-column>
+          <zg-column index="avgScroll" header="Average scroll on Page "></zg-column>
+          <zg-column index="avgKey" header="Average Key strokes on Page "></zg-column>
         </zg-colgroup>
       </zing-grid>
     </div>
@@ -75,6 +72,9 @@
   let activityMonthMap = new Map();
   let enterDateMap = {}
   let totalIdleDurationMap = {}
+  let clicksMap = {}
+  let scrollMap = {}
+  let keyMap = {}
   let pathNames = new Set()
   fetch("/api/performance").then(async (result) => {
     let res = await result.json()
@@ -245,52 +245,85 @@
       }
     });
   })
-  var today = new Date();
-  var priorDate = new Date().setDate(today.getDate()-30);
-  var startDate = new Date(priorDate);
-  date = []
-  datearr=[]
-  visitCount = []
-  for (var i = 0 ; i<31; i++){
-    date[i] = priorDate + i*86400000;
-    visitCount[i]=0
-    var d = new Date(date[i]);
-    var day = d.getDate();
-    var month = d.getMonth() + 1; //Month from 0 to 11
-    datearr[i] = month+"/"+day;
-  }
-  //one day 86,400,000ms
+
   fetch("/api/activity").then(async (result) => {
     let res = await result.json()
     await res.forEach((data) => {
-      // get year and month.
-      if (data.enterTime>priorDate){    
-        for (var i = 0 ; i<31; i++){
-          if (data.enterTime > date[i]){
-            visitCount[i]+=1;
-          }
-        }
+      pathNames.add(data.path)
+      let val = clicksMap[data.path]
+      if (val === undefined) {
+        clicksMap[data.path] = [data.clickXY.length]
+      } else  { 
+        clicksMap[data.path].push(data.clickXY.length);
       }
 
-    })
+      val = scrollMap[data.path]
+      if (val === undefined) {
+        scrollMap[data.path] = [data.scroll.length]
+      } else {
+        scrollMap[data.path].push(data.scroll.length);
+      }
 
+
+      val = keyMap[data.path]
+      if (val === undefined) {
+        keyMap[data.path] = [data.key.length]
+      } else {
+        keyMap[data.path].push(data.key.length);
+      }
+    })
 
     series = []
     let obj = {}
-    let visits = []
-    let month = []
-
-    obj["values"] = visitCount
-    obj["text"] = "Average visits"
+    let arr = []
+    pathNames.forEach(pathName => {
+      val = clicksMap[pathName]
+      if (val != undefined) {
+        arr.push(average(val))
+      } else {
+        arr.push(0)
+      }
+    })
+    obj["values"] = arr
+    obj["text"] = "Clicks per session"
     series.push(obj)
-    
+
+    obj = {}
+    arr = []
+    pathNames.forEach(pathName => {
+      val = scrollMap[pathName]
+      if (val != undefined) {
+        arr.push(average(val))
+      } else {
+        arr.push(0)
+      }
+    })
+    obj["values"] = arr
+    obj["text"] = "Scrolls per session"
+    series.push(obj)
+
+    obj = {}
+    arr = []
+    pathNames.forEach(pathName => {
+      val = keyMap[pathName]
+      if (val != undefined) {
+        arr.push(average(val))
+      } else {
+        arr.push(0)
+      }
+    })
+    obj["values"] = arr
+    obj["text"] = "Keystrokes per session"
+    series.push(obj)
+
+
     zingchart.render({
-      id: 'lineChartVisits',
+      id: 'engagementChart',
       data: {
-        type: 'line',
+        type: 'bar',
         "utc": true,
         "title": {
-          "text": "site traffic in the last 30 days",
+          "text": "User interaction per session",
           "font-size": "24px",
           "adjust-layout": true
         },
@@ -313,9 +346,9 @@
         },
         "scale-x": {
           "label": {
-            "text": "days",
+            "text": "Path",
           },
-          labels: Array.from(datearr),
+          labels: Array.from(pathNames),
           "align": "center",
         },
         "scale-y": {
@@ -325,7 +358,7 @@
             "line-style": "dashed"
           },
           "label": {
-            "text": "number of visitors to the Website",
+            "text": "Time (Millisecond)",
           },
           "minor-ticks": 0,
           "thousands-separator": ","
@@ -369,253 +402,26 @@
         series: series
       }
     });
-
-
   })
 
-  fetch("/api/activity").then(async (data) => {
-    res = await data.json()
-
-    hmap = {}
-
-
-    await res.forEach((activity) => {
-      let date = new Date(activity["enterTime"])
-      if (!hmap[[activity['isMobile'], date.getDay()]]) {
-        hmap[[activity['isMobile'], date.getDay()]] = 1
-      } else {
-        hmap[[activity['isMobile'], date.getDay()]]++
-      }
-    })
-
-    zingchart.render({
-      id: 'barChart',
-      data: {
-        type: 'bar',
-        "title": {
-          "text": "Visits vs Day of the Week",
-          "font-size": "24px",
-          "adjust-layout": true
-        },
-        "plotarea": {
-          "margin": "dynamic 45 60 dynamic",
-        },
-        "legend": {
-          "layout": "float",
-          "background-color": "none",
-          "border-width": 0,
-          "shadow": 0,
-          "align": "center",
-          "adjust-layout": true,
-          "toggle-action": "remove",
-          "item": {
-            "padding": 7,
-            "marginRight": 17,
-            "cursor": "hand"
-          }
-        },
-        "scale-x": {
-          "label": {
-            "text": "Day",
-          },
-          labels: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-          "align": "center",
-        },
-        "scale-y": {
-          "line-color": "#f6f7f8",
-          "shadow": 0,
-          "guide": {
-            "line-style": "dashed"
-          },
-          "label": {
-            "text": "Visits",
-          },
-          "minor-ticks": 0,
-          "thousands-separator": ","
-        },
-        "crosshair-x": {
-          "line-color": "#efefef",
-          "plot-label": {
-            "border-radius": "5px",
-            "border-width": "1px",
-            "border-color": "#f6f7f8",
-            "padding": "10px",
-            "font-weight": "bold"
-          },
-          "scale-label": {
-            "font-color": "#000",
-            "background-color": "#f6f7f8",
-            "border-radius": "5px"
-          }
-        },
-        "tooltip": {
-          "visible": false
-        },
-        "plot": {
-          "highlight": true,
-          "tooltip-text": "%t views: %v<br>%k",
-          "shadow": 0,
-          "line-width": "2px",
-          "marker": {
-            "type": "circle",
-            "size": 3
-          },
-          "highlight-state": {
-            "line-width": 3
-          },
-          "animation": {
-            "effect": 1,
-            "sequence": 2,
-            "speed": 100,
-          }
-        },
-        series: [
-          { values: [hmap[[false, 1]], hmap[[false, 2]], hmap[[false, 3]], hmap[[false, 4]], hmap[[false, 5]], hmap[[false, 6]], hmap[[false, 0]]], text: "Desktop" },
-          { values: [hmap[[true, 1]], hmap[[true, 2]], hmap[[true, 3]], hmap[[true, 4]], hmap[[true, 5]], hmap[[true, 6]], hmap[[true, 0]]], text: "Mobile" },
-        ]
-      }
-    });
-  })
-
-
-
-
-
-  var languages = new Proxy({}, {
-    get: (target, name) => name in target ? target[name] : 0
-  })
-  fetch("/api/static").then(async (response) => {
-    resBody = await response.json()
-    await resBody.forEach(element => {
-      if (!element.language || element.language == "") return
-      languages[element.language]++
-    })
-    zingchart.render({
-      id: 'languages',
-      data: {
-        type: 'pie',
-        plot: {
-          borderColor: "#2B313B",
-          borderWidth: 5,
-          // slice: 90,
-          valueBox: {
-            placement: 'out',
-            text: '%t\n%npv%',
-            fontFamily: "Open Sans"
-          },
-          tooltip: {
-            fontSize: '18',
-            fontFamily: "Open Sans",
-            padding: "5 10",
-            text: "%npv%"
-          },
-          animation: {
-            effect: 2,
-            method: 5,
-            speed: 900,
-            sequence: 1,
-            delay: 3000
-          }
-        },
-        title: {
-          text: 'Languages',
-          align: "center",
-          offsetX: 10,
-          fontFamily: "Open Sans",
-          fontSize: 25
-        },
-        plotarea: {
-          margin: "20 0 0 0"
-        },
-        series: Object.keys(languages).map((key) => {
-          return { values: [languages[key]], text: key }
-        })
-      }
-    });
-
-  })
 
   var devices = new Proxy({}, {
     get: (target, name) => name in target ? target[name] : 0
   })
   fetch("/api/static").then(async (response) => {
-    resBody = await response.json()
-    const regex1 = /.+\.\d \(/i;
-    const regex2 = /\).+/i;
-    const android = /(android|Android) \d+\.\d+\;/;
-    const windows = /(windows|Windows) .+ \d+.\d+\;/;
-    const mac = /(Macintosh)\;/;
-    const ios = /like Mac OS X/;
-    const linux = /Linux x.+/;
-    await resBody.forEach(element => {
-      if (!element.userAgent || element.userAgent == "") return
-      let userAgent = element.userAgent
-      userAgent = userAgent.replace(regex1, "")
-      userAgent = userAgent.replace(regex2, "")
-      if (android.test(userAgent)) {
-        devices["Android"]++
-      } else if (windows.test(userAgent)) {
-        devices["Windows"]++
-      } else if (mac.test(userAgent)) {
-        devices["Macintosh"]++
-      } else if (ios.test(userAgent)) {
-        devices['IOS']++
-      } else if (linux.test(userAgent)) {
-        devices["Linux"]++
-      } else {
-        devices["Others"]++
-      }
-    })
-    zingchart.render({
-      id: 'operating-system',
-      data: {
-        type: 'pie',
-        plot: {
-          borderColor: "#2B313B",
-          borderWidth: 5,
-          // slice: 90,
-          valueBox: {
-            placement: 'out',
-            text: '%t\n%npv%',
-            fontFamily: "Open Sans"
-          },
-          tooltip: {
-            fontSize: '18',
-            fontFamily: "Open Sans",
-            padding: "5 10",
-            text: "%npv%"
-          },
-          animation: {
-            effect: 2,
-            method: 5,
-            speed: 900,
-            sequence: 1,
-            delay: 3000
-          }
-        },
-        title: {
-          text: 'Operating Systems',
-          align: "center",
-          offsetX: 10,
-          fontFamily: "Open Sans",
-          fontSize: 25
-        },
-        plotarea: {
-          margin: "20 0 0 0"
-        },
-        series: Object.keys(devices).map((key) => {
-          return { values: [devices[key]], text: key }
-        })
-      }
-    });
-
 
     let pages = [];
     var pageViews = new Proxy({}, {
       get: (target, name) => name in target ? target[name] : 0
     })
 
-    var avgTimeOnPage = new Proxy({}, {
+    var avgClicks = new Proxy({}, {
+      get: (target, name) => name in target ? target[name] : [0, 0]
+    })
+    var avgScroll = new Proxy({}, {
+      get: (target, name) => name in target ? target[name] : [0, 0]
+    })
+    var avgKey = new Proxy({}, {
       get: (target, name) => name in target ? target[name] : [0, 0]
     })
 
@@ -623,14 +429,25 @@
     fetch("/api/activity").then(async (response) => {
     resBody = await response.json()
     await resBody.forEach(element => {
+
       pages.push(element?.path)
-      pageViews[element?.path]++
-      curr = avgTimeOnPage[element.path]
-      let leftDate = new Date(element.leftTime)
-      let enterDate = new Date(element.enterTime)
-      curr[0] += Math.abs(leftDate.getTime() - enterDate.getTime()) / 1000
+      //pageViews[element?.path]++
+      curr = avgClicks[element.path]
+      curr1 = avgScroll[element.path]
+      curr2 = avgKey[element.path]
+      //let leftDate = new Date(element.leftTime)
+      //let enterDate = new Date(element.enterTime)
+      curr[0] += element.clickXY.length
       curr[1]++ 
-      avgTimeOnPage[element.path] = curr 
+
+      curr1[0] += element.scroll.length
+      curr1[1]++ 
+
+      curr2[0] += element.key.length
+      curr2[1]++ 
+      avgClicks[element.path] = curr 
+      avgScroll[element.path] = curr1
+      avgKey[element.path] = curr2
       delete leftDate;
       delete enterDate
     })
@@ -641,8 +458,9 @@
     pagesSet.forEach((val) => {
       let currData = {
         page: val,
-        pageViews: pageViews[val],
-        avgTimeOnPage: avgTimeOnPage[val][0]/avgTimeOnPage[val][1],
+        avgClicks: avgClicks[val][0]/avgClicks[val][1],
+        avgScroll: avgScroll[val][0]/avgScroll[val][1],
+        avgKey: avgKey[val][0]/avgKey[val][1],
       }
       data.push(currData)
     })
@@ -656,6 +474,6 @@
   })
 
   })
-</script>
 
+</script>
 </html>
