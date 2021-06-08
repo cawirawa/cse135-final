@@ -60,3 +60,7 @@ h3 {
 .column {
   flex: 1;
 }
+
+.error {
+  color: red;
+}

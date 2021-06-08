@@ -19,11 +19,14 @@
 
     <label for="password"><b>Password</b></label></br>
     <input id="password" type="password" placeholder="password" name="password" required></br>
-
+    <p id="error" class="error">Error</p>
     <button type="submit" onclick="formSubmit(event)">Login</button>
   </form>
   <script>
+    let errorTag = document.getElementById("error")
+    errorTag.style.display = "none"
     function formSubmit(e) {
+      errorTag.style.display = "none"
       e.preventDefault(); //This will prevent the default click action
 
       var frm = $('#' + $(this).data('name') + '');
@@ -45,8 +48,10 @@
           window.location.href = '/'
         },
         error: function (data) {
-          console.log('An error occurred.');
-          console.log(data?.responseJSON);
+          res = data?.responseJSON
+          console.log(res.error);
+          errorTag.style.display = "block"
+          errorTag.innerHTML = res.error ? res.error : "An error occurred."
         }
       });
     }
