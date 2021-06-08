@@ -13,6 +13,13 @@ router.get("/", (req, res) => {
   res.sendFile(path.join(HTML_PATH + "dashboard.html"));
 });
 
+router.get("/session.html", (req, res) => {
+  if (!req.session.loggedIn) {
+    return res.redirect("/login");
+  }
+  res.sendFile(path.join(HTML_PATH + "session.html"));
+});
+
 router.get("/login", (req, res) => {
   if (req.session.loggedIn) return res.redirect("/");
   res.sendFile(path.join(HTML_PATH + "login.html"));
