@@ -23,8 +23,10 @@
   </div>
 
   <div>
-    <h1>question</h1>
-    <h3>We want to look at how engaged our users are in our page. Since sometimes the user will idle a page alot, we decided to calculate the actual session time when the user is not idle. And then we shall count how many interactions is done. Another parameter to see is how often they scroll to see if the page is too long or not.</h3>
+    <h1>Question</h1>
+    <h3>How are users enganged in our site?</h3>
+    <h2>Description</h2>
+    <p>We want to look at how engaged our users are in our page. Since sometimes the user will idle a page alot, we decided to calculate the actual session time when the user is not idle. And then we shall count how many interactions is done. Another parameter to see is how often they scroll to see if the page is too long or not.</p>
   </div>
   <div class="container">
     <div class="chart-row">
@@ -46,25 +48,6 @@
   </div>
 </body>
 <script>
-  function getCookie(cname) {
-    var name = cname + "=";
-    var decodedCookie = decodeURIComponent(document.cookie);
-    var ca = decodedCookie.split(';');
-    for (var i = 0; i < ca.length; i++) {
-      var c = ca[i];
-      while (c.charAt(0) == ' ') {
-        c = c.substring(1);
-      }
-      if (c.indexOf(name) == 0) {
-        return c.substring(name.length, c.length);
-      }
-    }
-    return "";
-  }
-  var userManagementAnchor = document.getElementById("users");
-  if (getCookie("isAdmin") !== "true") {
-    userManagementAnchor.style.display = "none";
-  }
   let average = (array) => array.reduce((a, b) => a + b) / array.length;
   let sum = (array) => array.reduce((a, b) => a + b);
   let loadDurationMap = {}
