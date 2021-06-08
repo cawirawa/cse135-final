@@ -1,5 +1,5 @@
 # CSE135
-domain site: woiks.xyz
+domain: woiks.xyz
 reporting website: https://reporting.woiks.xyz
 
 ## Project description
