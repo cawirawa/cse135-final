@@ -16,6 +16,12 @@ Username: nonadmin
 Email: nonadmin@ucsd.edu
 Password: Aiueo123!
 
+## Note
+We store all of our html files in the HTML folder for a better structure for the project.
+The entry point to the server is from server.js. Then, the routing is located in the gateway folder.
+The gateway will then call services from the service folder depending on the usecase of the endpoint.
+Service will then call functions from the db folder if it needs to access the database.
+
 ## Authentication
 For authentication, we explored various methods of doing it. We first made the necessary endpoints in the gateway folder and set up the structure of the project to seperate gateway, service and database operations for beter debugging.
 
@@ -38,7 +44,7 @@ The fifth chart that we have is also a pie chart where we display the languages 
 
 Lastly, we have a grid that shows the total page views per page and average time on the page in seconds. The reason we use grid is because it is easy to read as the row is unique per page. The reason we display this is because we see which page is viewed the longest and visited the most. We believe this is also useful as we know which pages users are more interested in and which pages users don't.
 
-NOTE: the file name for the dashboard is 'dashboard.html' located in the html folder.
+NOTE: the file name for the dashboard is 'dashboard.html' located in the html folder for a better project structure..
 
 ## Report
 Our collectorjs collects alot of user activity such as user loadtime, entertime, lefttime and 3 arrays which contain clicks, scrolls and keyboard activity. 
@@ -49,4 +55,4 @@ While the data can contain many accidental user interactions, it can still tell 
 
 We then included a third component as a grid. the grid would contain the same information as the chart but it would be easier to view the numbers and compare them. Whereas in the chart, we can see the scale of the difference but not really the value, as we have to interact with the chart to view its values.
 
-NOTE: the file name for our metric is 'sessions.html' located in the html folder.
+NOTE: the file name for our metric is 'session.html' located in the html folder for a better project structure.
